@@ -10,5 +10,7 @@ files[] = {"id":"e72301d6-a746-48c1-8723-139bbf351519","path":"My Collection.jso
 
 [relations.apiDefinition]
 rootDirectory = postman/schemas
+files[] = {"path":"index.yaml","metaData":{}}
 
 [relations.apiDefinition.metaData]
+type = openapi:3
