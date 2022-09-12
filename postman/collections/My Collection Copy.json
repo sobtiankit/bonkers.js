@@ -1,0 +1,26 @@
+{
+	"info": {
+		"_postman_id": "bc00e62a-9e3f-4de7-9161-b7707a58c9c9",
+		"name": "My Collection Copy",
+		"description": "Adding description for the collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "23281520-bc00e62a-9e3f-4de7-9161-b7707a58c9c9"
+	},
+	"item": [
+		{
+			"name": "Example Reauesy",
+			"id": "8f9c9aca-feeb-4182-a173-e152c9f1ff44",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -8,6 +8,11 @@
 	},
 	"item": [
 		{
+			"name": "Test Floder",
+			"item": [],
+			"id": "fd942162-59b4-4609-bcb4-dde7f5696933"
+		},
+		{
 			"name": "Read a spacecraft",
 			"id": "da9f573c-0077-4504-b1d4-e04a4650183b",
 			"protocolProfileBehavior": {
