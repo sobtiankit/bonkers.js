@@ -1,0 +1,35 @@
+{
+	"info": {
+		"_postman_id": "e72301d6-a746-48c1-8723-139bbf351519",
+		"name": "My Collection",
+		"description": "Adding description for the collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "23281520-e72301d6-a746-48c1-8723-139bbf351519"
+	},
+	"item": [
+		{
+			"name": "Example Reauesy",
+			"id": "e9000fa5-a954-4266-a365-8e2fefde1a01",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Example Reauesy Copy",
+			"id": "cd0657cf-d3f8-4fad-af19-81ed6acb9a7f",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
