@@ -1,0 +1,462 @@
+openapi: 3.0.0
+info:
+  title: Billing API
+  version: 1.0.0
+  description: |
+    # Billing Management API
+
+    ## Overview
+    A comprehensive API for managing billing operations, including:
+    - Invoice generation
+    - Payment processing
+    - Subscription management
+    - Billing history
+    - Payment method management
+
+    ## Authentication
+    All endpoints require Bearer Token authentication.
+
+    ## Error Handling
+    The API uses standard HTTP status codes and provides detailed error responses.
+
+    ## Contact Information
+    - **Support Email**: billing-support@example.com
+    - **Support Phone**: +1-800-BILLING
+
+servers:
+  - url: https://api.example.com/v1/billing
+    description: Production Server
+  - url: https://sandbox.example.com/v1/billing
+    description: Sandbox Environment
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Invoice:
+      type: object
+      required: [id, customerId, amount, status, issueDate, dueDate]
+      properties:
+        id:
+          type: string
+          description: Unique invoice identifier
+          example: INV-2023-0001
+        customerId:
+          type: string
+          description: Customer unique identifier
+          example: CUST-5678
+        amount:
+          type: number
+          format: float
+          description: Total invoice amount
+          example: 99.99
+        status:
+          type: string
+          enum: [pending, paid, overdue, cancelled]
+          description: Current status of the invoice
+          example: pending
+        issueDate:
+          type: string
+          format: date-time
+          description: Date and time when invoice was generated
+          example: "2023-08-15T10:30:00Z"
+        dueDate:
+          type: string
+          format: date-time
+          description: Date and time when payment is due
+          example: "2023-09-15T23:59:59Z"
+        lineItems:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+                example: Premium Subscription
+              quantity:
+                type: integer
+                example: 1
+              unitPrice:
+                type: number
+                format: float
+                example: 99.99
+              total:
+                type: number
+                format: float
+                example: 99.99
+
+    PaymentMethod:
+      type: object
+      required: [id, type, lastFourDigits, expiryDate]
+      properties:
+        id:
+          type: string
+          description: Unique payment method identifier
+          example: PM-CARD-1234
+        type:
+          type: string
+          enum: [credit_card, debit_card, paypal, bank_transfer]
+          description: Type of payment method
+          example: credit_card
+        lastFourDigits:
+          type: string
+          description: Last 4 digits of the payment method
+          example: "4242"
+        expiryDate:
+          type: string
+          format: date
+          description: Expiry date of the payment method
+          example: "2025-12-31"
+        isDefault:
+          type: boolean
+          description: Whether this is the default payment method
+          example: true
+
+    PaymentTransaction:
+      type: object
+      required: [id, invoiceId, amount, status, timestamp]
+      properties:
+        id:
+          type: string
+          description: Unique transaction identifier
+          example: TXN-2023-0001
+        invoiceId:
+          type: string
+          description: Associated invoice identifier
+          example: INV-2023-0001
+        amount:
+          type: number
+          format: float
+          description: Transaction amount
+          example: 99.99
+        status:
+          type: string
+          enum: [success, failed, pending, refunded]
+          description: Current status of the transaction
+          example: success
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the transaction
+          example: "2023-08-15T11:45:30Z"
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
+
+  responses:
+    BadRequest:
+      description: Bad Request - Invalid input
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: INVALID_INPUT
+              message:
+                type: string
+                example: The provided input is invalid or malformed.
+
+    Unauthorized:
+      description: Unauthorized - Invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: UNAUTHORIZED
+              message:
+                type: string
+                example: Authentication is required to access this resource.
+
+    NotFound:
+      description: Not Found - The requested resource does not exist
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: RESOURCE_NOT_FOUND
+              message:
+                type: string
+                example: The requested resource could not be found.
+
+paths:
+  /invoices:
+    get:
+      summary: List Invoices
+      description: Retrieve a list of invoices for the authenticated user
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, paid, overdue, cancelled]
+          description: Filter invoices by status
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: Number of invoices per page
+      responses:
+        '200':
+          description: Successfully retrieved invoices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 50
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create Invoice
+      description: Generate a new invoice for a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId, lineItems]
+              properties:
+                customerId:
+                  type: string
+                  example: CUST-5678
+                lineItems:
+                  type: array
+                  items:
+                    type: object
+                    required: [description, quantity, unitPrice]
+                    properties:
+                      description:
+                        type: string
+                        example: Premium Subscription
+                      quantity:
+                        type: integer
+                        example: 1
+                      unitPrice:
+                        type: number
+                        format: float
+                        example: 99.99
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /invoices/{invoiceId}:
+    get:
+      summary: Get Invoice Details
+      description: Retrieve details of a specific invoice
+      parameters:
+        - in: path
+          name: invoiceId
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the invoice
+      responses:
+        '200':
+          description: Successfully retrieved invoice details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /payments:
+    get:
+      summary: List Payment Transactions
+      description: Retrieve a list of payment transactions
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [success, failed, pending, refunded]
+          description: Filter transactions by status
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: Number of transactions per page
+      responses:
+        '200':
+          description: Successfully retrieved payment transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentTransaction'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 50
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Process Payment
+      description: Process a payment for a specific invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoiceId, paymentMethodId]
+              properties:
+                invoiceId:
+                  type: string
+                  example: INV-2023-0001
+                paymentMethodId:
+                  type: string
+                  example: PM-CARD-1234
+      responses:
+        '200':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /payment-methods:
+    get:
+      summary: List Payment Methods
+      description: Retrieve a list of saved payment methods
+      responses:
+        '200':
+          description: Successfully retrieved payment methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Add Payment Method
+      description: Add a new payment method for the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, cardNumber, expiryDate, cvv]
+              properties:
+                type:
+                  type: string
+                  enum: [credit_card, debit_card]
+                  example: credit_card
+                cardNumber:
+                  type: string
+                  example: "4242424242424242"
+                expiryDate:
+                  type: string
+                  format: date
+                  example: "2025-12-31"
+                cvv:
+                  type: string
+                  example: "123"
+      responses:
+        '201':
+          description: Payment method added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /payment-methods/{paymentMethodId}:
+    delete:
+      summary: Remove Payment Method
+      description: Remove a specific payment method
+      parameters:
+        - in: path
+          name: paymentMethodId
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the payment method
+      responses:
+        '204':
+          description: Payment method removed successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
